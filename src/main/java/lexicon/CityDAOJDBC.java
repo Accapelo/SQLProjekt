@@ -20,17 +20,17 @@ public class CityDAOJDBC implements CityDAO {
 
     @Override
     public City findById(int id) {
-        City city;
+        City city=null;
         try(Connection connection = DriverManager.getConnection(connect,user,pass);
             PreparedStatement statement = connection.prepareStatement("select * from city where ID=?");
         )
         {
-            statement.setString(1,""+id);
+            statement.setInt(1,id);
 
             ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()){
-                return city= new City(resultSet.getInt("ID"),
+                city= new City(resultSet.getInt("ID"),
                         resultSet.getString("Name"),
                         resultSet.getString("CountryCode"),
                         resultSet.getString("District"),
@@ -43,7 +43,7 @@ public class CityDAOJDBC implements CityDAO {
             e.printStackTrace();
         }
 
-        return null;
+        return city;
 
     }
 
@@ -68,12 +68,12 @@ public class CityDAOJDBC implements CityDAO {
                         resultSet.getInt("Population")));
             }
 
-            return list;
+
 
         }catch(SQLException e){
             e.printStackTrace();
         }
-        return null;
+        return list;
     }
 
     @Override
@@ -96,12 +96,12 @@ public class CityDAOJDBC implements CityDAO {
                         resultSet.getInt("Population")));
             }
 
-            return list;
+
 
         }catch(SQLException e){
             e.printStackTrace();
         }
-        return null;
+        return list;
     }
 
     @Override
@@ -121,12 +121,12 @@ public class CityDAOJDBC implements CityDAO {
                         resultSet.getInt("Population")));
             }
 
-            return list;
+
 
         }catch(SQLException e){
             e.printStackTrace();
         }
-        return null;
+        return list;
     }
 
     @Override
@@ -143,56 +143,49 @@ public class CityDAOJDBC implements CityDAO {
             statement.setString(5,""+city.getPopulation());
 
             statement.executeUpdate();
-            return city;
+
 
         }catch(SQLException e){
             e.printStackTrace();
         }
-        return null;
+        return city;
     }
 
     @Override
     public City update(City city) {
-        String cityName = city.getName();
+        int cityID = city.getId();
+
+        Scanner scan = new Scanner(System.in);
+
+        System.out.println("Change value by typing \"Column=NewValue\"");
+
+        String updateAction=scan.nextLine();
+
 
         try(Connection connection = DriverManager.getConnection(connect,user,pass);
-            PreparedStatement statement = connection.prepareStatement("? city ? ?");
-            Scanner scan = new Scanner(System.in);
+            PreparedStatement statement = connection.prepareStatement("UPDATE city SET ? WHERE ?");
+
         )
         {
-            while(true){
-                System.out.println("Add (1) or delete (2) city:");
 
-                String addOrDelete=scan.nextLine();
+            statement.setString(1,updateAction);
+            statement.setString(2,"ID = "+cityID);
 
-                if(addOrDelete.equalsIgnoreCase("2")){
-                    statement.setString(1,"DELETE FROM");
-                    statement.setString(2,"WHERE Name LIKE ");
-                    statement.setString(3,cityName);
-                    break;
-                }else if(addOrDelete.equalsIgnoreCase("1")){
-                    statement.setString(1,"INSERT INTO");
-                    statement.setString(2,"VALUES");
-                    statement.setString(3,"("+city.getId()+","+city.getName()+","+city.getCode()+","+city.getDistrict()+","+city.getPopulation()+")");
-                    break;
-                }else{
-                    System.out.println("Incorrect input");
-                }
-            }
-            
             statement.executeUpdate();
-
-            return city;
 
         }catch(SQLException e){
             e.printStackTrace();
         }
-        return null;
+
+        city=findById(cityID);
+
+        return city;
     }
 
     @Override
     public int delete(City city) {
         String cityName = city.getName();
+        int row=-1;
 
         try(Connection connection = DriverManager.getConnection(connect,user,pass);
             PreparedStatement statement = connection.prepareStatement("delete from city where Name like ?");
@@ -200,13 +193,11 @@ public class CityDAOJDBC implements CityDAO {
         {
             statement.setString(1,cityName);
 
-            int row = statement.executeUpdate();
-
-            return row;
+            row = statement.executeUpdate();
 
         }catch(SQLException e){
             e.printStackTrace();
         }
-        return -1;
+        return row;
     }
 }
